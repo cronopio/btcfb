@@ -38,10 +38,12 @@ app.get('/', function(req, res){
   jsonreq.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
     res.render('index', {
       title:'Precio del Bitcoin en Facebook',
-      locals:{dolares:data.USD['24h']}
+      locals: {
+        dolares: data.USD['24h']
+      , euros: data.EUR['24h']
+      }
     });
   });
-  
 });
 
 app.listen(3000);
