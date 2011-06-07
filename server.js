@@ -5,7 +5,7 @@
 
 var express = require('express');
 var mongoose = require('mongoose');
-var btcPrices = require('jsonreq');
+var jsonreq = require('jsonreq');
 
 var app = module.exports = express.createServer();
 
@@ -35,9 +35,13 @@ app.db = mongoose.connect(app.set('db-uri'));
 // Routes
 
 app.get('/', function(req, res){
-  btcPrices.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
-    res.send(data);
-  })
+  jsonreq.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
+    res.render('index', {
+      title:'Precio del Bitcoin en Facebook',
+      locals:{dolares:data.USD['24h']}
+    });
+  });
+  
 });
 
 app.listen(3000);
