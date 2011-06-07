@@ -4,6 +4,8 @@
  */
 
 var express = require('express');
+var mongoose = require('mongoose');
+var btcPrices = require('jsonreq');
 
 var app = module.exports = express.createServer();
 
@@ -20,18 +22,22 @@ app.configure(function(){
 
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+  app.set('db-uri', 'mongodb://localhost/btcfb-development');
 });
 
 app.configure('production', function(){
   app.use(express.errorHandler()); 
+  app.set('db-uri', 'mongodb://btcfb:t3st1ng@localhost/btcfb-production');
 });
+
+app.db = mongoose.connect(app.set('db-uri'));
 
 // Routes
 
 app.get('/', function(req, res){
-  res.render('index', {
-    title: 'Bitcoin Price on Facebook'
-  });
+  btcPrices.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
+    res.send(data);
+  })
 });
 
 app.listen(3000);
