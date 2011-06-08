@@ -47,5 +47,10 @@ app.get('/', function(req, res){
   });
 });
 
+app.post('/', function(req, res){
+  console.log('Nueva Info');
+  console.log(req.body);
+});
+
 app.listen(3001);
 console.log("Express server listening on port %d", app.address().port);
