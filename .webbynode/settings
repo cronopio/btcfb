@@ -1,3 +1,4 @@
 nodejs_proxy=Y
 nodejs_port=3001
 engine=nodejs
+addons=(mongodb)
