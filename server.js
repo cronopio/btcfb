@@ -6,6 +6,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var jsonreq = require('jsonreq');
+var crypto = require('crypto');
 
 var app = module.exports = express.createServer();
 
@@ -32,6 +33,22 @@ app.configure('production', function(){
 
 app.db = mongoose.connect(app.set('db-uri'));
 
+var base64_decode = function(cifrado){
+  var limpio = cifrado.replace(/_/, '/').replace(/-/, '+');
+  return new Buffer(limpio, 'base64').toString();
+};
+
+var checkFirma = function(sinverificar, msg){
+    var supuesta = sinverificar+'=';
+    var firma = crypto.createHmac('sha256', '9e39d0ddc888b9e08c418debf14cf3b4').update(msg).digest('base64');
+    if (firma == supuesta){
+      return true;
+    } else {
+      return false;
+    }
+
+};
+
 // Routes
 
 app.get('/', function(req, res){
@@ -48,8 +65,24 @@ app.get('/', function(req, res){
 });
 
 app.post('/', function(req, res){
-  console.log('Nueva Info');
-  console.log(req.body);
+  if (req.body.signed_request){
+    // Es una peticion desde facebook
+    var peticion = req.body.signed_request.split('.');
+    var firma = peticion[0].replace(/_/, '/').replace(/-/, '+');
+    var fbObj = JSON.parse(base64_decode(peticion[1]));
+    if (fbObj.algorithm != 'HMAC-SHA256'){
+      console.error('Recibido un mensaje en diferente cifrado');
+      throw new Error('Error de comunicacion con Facebook');
+    }
+    if (checkFirma(firma,peticion[1])){
+        // Podemos confiar en el mensaje y tratar sus datos
+        console.log(fbObj);
+        res.redirect('/');
+    } else {
+      console.error('La firma del mensaje no es valida');
+      throw new Error('Error al validar el mensaje con Facebook');
+    }
+  }
 });
 
 app.listen(3001);
