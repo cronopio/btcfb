@@ -44,6 +44,8 @@ var checkFirma = function(sinverificar, msg){
     if (firma == supuesta){
       return true;
     } else {
+      console.log('Supuesta '+supuesta);
+      console.log('Firma '+firma);
       return false;
     }
 
@@ -68,16 +70,19 @@ app.post('/', function(req, res){
   if (req.body.signed_request){
     // Es una peticion desde facebook
     var peticion = req.body.signed_request.split('.');
-    var firma = peticion[0].replace(/_/, '/').replace(/-/, '+');
+    var firma = peticion[0].replace(/_/g, '/').replace(/-/g, '+');
     var fbObj = JSON.parse(base64_decode(peticion[1]));
     if (fbObj.algorithm != 'HMAC-SHA256'){
       console.error('Recibido un mensaje en diferente cifrado');
       throw new Error('Error de comunicacion con Facebook');
     }
     if (checkFirma(firma,peticion[1])){
-        // Podemos confiar en el mensaje y tratar sus datos
-        console.log(fbObj);
-        res.redirect('/');
+      // Podemos confiar en el mensaje y tratar sus datos
+      console.log(fbObj);
+      // Cuando el usuario autoriza la app pasa por aca
+      // y existe fbObj.user_id Este ID hay que guardarlo en nuestra DB
+      // adicionalmente viene un token oauth2 en fbObj.oauth_token
+      res.redirect('/');
     } else {
       console.error('La firma del mensaje no es valida');
       throw new Error('Error al validar el mensaje con Facebook');
@@ -85,5 +90,5 @@ app.post('/', function(req, res){
   }
 });
 
-app.listen(3001);
+app.listen(3000);
 console.log("Express server listening on port %d", app.address().port);
