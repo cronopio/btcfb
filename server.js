@@ -41,6 +41,7 @@ app.get('/', function(req, res){
       locals: {
         dolares: data.USD['24h']
       , euros: data.EUR['24h']
+      , libras: data.GBP['24h'] 
       }
     });
   });
