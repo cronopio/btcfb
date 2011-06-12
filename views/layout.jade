@@ -4,16 +4,10 @@ html
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(type='text/javascript', src='http://connect.facebook.net/en_US/all.js')
-    //script(type='text/javascript', src='http://static.ak.fbcdn.net/connect/en_US/core.debug.js')
+    script(type='text/javascript', src='js/fx.js')
   body!= body
     #fb-root
     script(type='text/javascript')
-      var urlencode = function(str){
-        str = (str+'').toString();
-        return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27')
-        .replace(/\\(/g, '%28').replace(/\\)/g, '%29')
-        .replace(/\\*/g, '%2A').replace(/%20/g, '+');
-      };
       FB.init({
         appId: '124829930933291',
         status: true,
@@ -31,11 +25,11 @@ html
                 imagen.src = 'http://graph.facebook.com/'+user.id+'/picture';
                 userLine.appendChild(imagen);
                 var nombre = document.createElement('span');
+                nombre.style['margin-left'] = '5px';
+                nombre.style['font-weight'] = 'bold';
                 nombre.innerHTML = user.name;
                 userLine.appendChild(nombre);
               }
             });
-        } else {
-          top.location.href  = 'http://www.facebook.com/dialog/oauth?client_id=124829930933291&redirect_uri='+urlencode('http://apps.facebook.com/bitcoin_price/');
         }
       });

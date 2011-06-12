@@ -75,6 +75,8 @@ app.post('/', function(req, res){
       req.session.fbInfo = mensaje;
       console.log('El usuario '+mensaje.user_id+' ha autorizado la app');
       res.redirect('/');
+    } else {
+      fb.auth_dialog(res,'http://apps.facebook.com/bitcoin_price/');
     }
   }
 });

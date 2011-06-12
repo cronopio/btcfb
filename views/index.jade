@@ -1,10 +1,43 @@
 .imagenFondo
   p(class='fbbox', style='position:absolute;top:155px;left:140px;') 
     img(src='/images/iconBtc.png', width='16px', height:'16px', style='float:left;')
-    span(style='margin-left:4px;') El precio hoy: USD 
+    span(style='margin-left:4px;') Today's price is: USD 
       b $#{dolares}
     span(style='margin-left:4px;') EUR 
       b €#{euros}
     span(style='margin-left:4px;') GBP  
       b £#{libras}
-  p(class='fbbox', style='position:absolute;top:185px;left:140px;', id='userLine')
+  p(class='fbbox', style='position:absolute;top:5px;left:250px;', id='userLine')
+#contenido
+  .menu
+    a(href='javascript:void(0)', id='btn_calc') Calculate
+  div(id='calculadora', class='fbbox', style='opacity:0;')
+    input(id='calc_btc', size='4')
+    label(style='margin-left:3px') BTC equal to 
+      input(id='calc_dest', size='8', disabled)
+      select(id='calc_list')
+        option(value='#{dolares}') USD
+        option(value='#{euros}') EUR
+        option(value='#{libras}') GBP
+        
+script
+  var cant = document.getElementById('calc_btc');
+  var lista = document.getElementById('calc_list');
+  var calcular = function(){
+    var res = cant.value * lista.value;
+    document.getElementById('calc_dest').value = res;
+  };
+  cant.onchange = calcular;
+  lista.onchange = calcular;
+  
+  document.getElementById('btn_calc').onclick = function(){
+    var calculadora = document.getElementById('calculadora');
+    var opacity = calculadora.style.opacity;
+    if (opacity == 1) {
+      $fx(calculadora).fxAdd({type:'opacity',from:100,to:0,step:-10,delay:30}).fxRun(null,0);
+    }
+    if (opacity == 0) {
+      $fx(calculadora).fxAdd({type:'opacity',from:0,to:100,step:10,delay:30}).fxRun(null,0);
+    }
+  };
+  
