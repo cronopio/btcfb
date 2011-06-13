@@ -3,12 +3,16 @@
   | !{fbLike}
   p(class='fbbox', style='position:absolute;top:155px;left:140px;') 
     img(src='/images/iconBtc.png', width='16px', height:'16px', style='float:left;')
-    span(style='margin-left:5px;') Today's price is: USD 
-      b $#{dolares}
-    span(style='margin-left:5px;') EUR 
-      b €#{euros}
-    span(style='margin-left:5px;') GBP  
-      b £#{libras}
+    span(style='margin-left:5px;') Today's price is:
+      b #{dolares.tendencia}   
+      b $#{dolares.valor}USD
+    span(style='margin-left:5px;') | 
+      b #{euros.tendencia}  
+      b  €#{euros.valor}EUR 
+    span(style='margin-left:5px;') | 
+      b #{libras.tendencia}  
+      b £#{libras.valor}GBP
+    
     span(style='margin-left:10px;')
       a(href='javascript:void(0)', class='fblink', id='btn_share_this') Share This 
   p(class='fbbox', style='position:absolute;top:5px;left:250px;', id='userLine')
@@ -20,9 +24,9 @@
     label(style='margin-left:3px') BTC equal to 
       input(id='calc_dest', size='8', disabled)
       select(id='calc_list')
-        option(value='#{dolares}') USD
-        option(value='#{euros}') EUR
-        option(value='#{libras}') GBP
+        option(value='#{dolares.valor}') USD
+        option(value='#{euros.valor}') EUR
+        option(value='#{libras.valor}') GBP
         
 script
   (function(){
@@ -55,7 +59,7 @@ script
         link: 'http://apps.facebook.com/bitcoin_price/',
         picture: 'http://s1.bitelia.com/files/2011/06/Bitcoin-100x100.png',
         caption: 'Weighted prices in major markets',
-        description: 'Right now the Bitcoin price are USD #{dolares}  -  € #{euros}  -  £ #{libras}',
+        description: 'Right now the Bitcoin price are USD #{dolares.valor}  -  € #{euros.valor}  -  £ #{libras.valor}',
         message: "I Just found out the today's price of Bitcoin. Thanks to Bitcoin Price of Day"
      },
      function(response) {

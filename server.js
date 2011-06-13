@@ -6,6 +6,8 @@
 var express = require('express');
 var jsonreq = require('jsonreq');
 var Facebook = require('./facebook');
+var mongo = require('mongodb');
+var server = new mongo.Server("127.0.0.1", 27017, {});
 
 var app = module.exports = express.createServer();
 
@@ -28,13 +30,16 @@ app.configure(function(){
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  app.set('db-name', 'btcfb-devel');
 });
 
 app.configure('production', function(){
   app.use(express.errorHandler()); 
+  app.set('db-name', 'btcfb-production');
 });
 
+var db = new mongo.Db(app.set('db-name'), server, {});
 
 var checkUser = function(req, res, next){
   if (req.session.fbInfo){
@@ -50,14 +55,48 @@ var checkUser = function(req, res, next){
 // Routes
 
 app.get('/', checkUser, function(req, res){
+  var locals = {};
+  // Traemos los valores de bitcoincharts.com
   jsonreq.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
-    res.render('index', {
-      title:'Bitcoin Price on Facebook',
-      locals: {
-        dolares: data.USD['24h']
-      , euros: data.EUR['24h']
-      , libras: data.GBP['24h'] 
-      }
+    // Inicializamos los locales a pasar a la vista
+    locals.dolares = {valor: data.USD['24h']};
+    locals.euros = {valor: data.EUR['24h']};
+    locals.libras = {valor: data.GBP['24h']};
+    
+    db.open(function(err,client){
+      if (err) throw err;
+      // Iniciamos la guardada de la informacion.
+      db.collection('precios', function(err, precios){
+        var timestamp = new Date();
+        precios.insert({time:timestamp, precios:data}, {safe:true}, 
+          function(err,objs){if (err) console.warn(err.message)});
+      });
+      
+      // Revisamos la tendencia con el nuevo precio
+      db.collection('precios', function (err, precios) {
+        var ultimos = precios.find({}, {sort:{time:-1}});
+        var nuevo = {};
+        ultimos.nextObject(function(err,doc){
+          nuevo = doc;
+        }); 
+        ultimos.nextObject(function(err,doc){
+          var checkTendencia = function (nuevo, viejo) {
+            var ret;
+            if (nuevo === viejo) ret = '=';
+            if (nuevo > viejo) ret = '↑';
+            if (nuevo < viejo) ret = '↓';
+            return ret;
+          }
+          locals.dolares.tendencia = checkTendencia(nuevo.precios.USD['24h'], doc.precios.USD['24h']);
+          locals.euros.tendencia = checkTendencia(nuevo.precios.EUR['24h'], doc.precios.EUR['24h']);
+          locals.libras.tendencia = checkTendencia(nuevo.precios.GBP['24h'], doc.precios.GBP['24h']);
+          res.render('index', {
+            title:'Bitcoin Price on Facebook',
+            locals: locals
+          });
+        });
+      });
+      db.close();
     });
   });
 });
