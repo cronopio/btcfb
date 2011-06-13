@@ -3,12 +3,14 @@
   | !{fbLike}
   p(class='fbbox', style='position:absolute;top:155px;left:140px;') 
     img(src='/images/iconBtc.png', width='16px', height:'16px', style='float:left;')
-    span(style='margin-left:4px;') Today's price is: USD 
+    span(style='margin-left:5px;') Today's price is: USD 
       b $#{dolares}
-    span(style='margin-left:4px;') EUR 
+    span(style='margin-left:5px;') EUR 
       b €#{euros}
-    span(style='margin-left:4px;') GBP  
+    span(style='margin-left:5px;') GBP  
       b £#{libras}
+    span(style='margin-left:10px;')
+      a(href='javascript:void(0)', class='fblink', id='btn_share_this') Share This 
   p(class='fbbox', style='position:absolute;top:5px;left:250px;', id='userLine')
 #contenido
   .menu
@@ -23,23 +25,45 @@
         option(value='#{libras}') GBP
         
 script
-  var cant = document.getElementById('calc_btc');
-  var lista = document.getElementById('calc_list');
-  var calcular = function(){
-    var res = cant.value * lista.value;
-    document.getElementById('calc_dest').value = res;
-  };
-  cant.onchange = calcular;
-  lista.onchange = calcular;
-  
-  document.getElementById('btn_calc').onclick = function(){
-    var calculadora = document.getElementById('calculadora');
-    var opacity = calculadora.style.opacity;
-    if (opacity == 1) {
-      $fx(calculadora).fxAdd({type:'opacity',from:100,to:0,step:-10,delay:30}).fxRun(null,0);
-    }
-    if (opacity == 0) {
-      $fx(calculadora).fxAdd({type:'opacity',from:0,to:100,step:10,delay:30}).fxRun(null,0);
-    }
-  };
-  
+  (function(){
+    var cant = document.getElementById('calc_btc');
+    var lista = document.getElementById('calc_list');
+    var calcular = function(){
+      var res = cant.value * lista.value;
+      document.getElementById('calc_dest').value = res;
+    };
+    cant.onchange = calcular;
+    lista.onchange = calcular;
+    
+    document.getElementById('btn_calc').onclick = function(){
+      var calculadora = document.getElementById('calculadora');
+      var opacity = calculadora.style.opacity;
+      if (opacity == 1) {
+        $fx(calculadora).fxAdd({type:'opacity',from:100,to:0,step:-10,delay:30}).fxRun(null,0);
+      }
+      if (opacity == 0) {
+        $fx(calculadora).fxAdd({type:'opacity',from:0,to:100,step:10,delay:30}).fxRun(null,0);
+      }
+    };
+    
+    // Boton share this
+    var btn_share = document.getElementById('btn_share_this');
+    btn_share.onclick = function(){
+      FB.ui({
+        method: 'feed',
+        name: 'Bitcoin Price of Day',
+        link: 'http://apps.facebook.com/bitcoin_price/',
+        picture: 'http://s1.bitelia.com/files/2011/06/Bitcoin-100x100.png',
+        caption: 'Weighted prices in major markets',
+        description: 'Right now the Bitcoin price are USD #{dolares}  -  € #{euros}  -  £ #{libras}',
+        message: "I Just found out the today's price of Bitcoin. Thanks to Bitcoin Price of Day"
+     },
+     function(response) {
+       if (response && response.post_id) {
+         btn_share.innerHTML = 'Shared!';
+       } else {
+         btn_share.innerHTML = 'Try Again :('
+       }
+     });
+    };
+  })();

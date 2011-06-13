@@ -10,6 +10,16 @@ body {
   color: #666;
 }
 
+a.fblink {
+  color:#3B5998;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+a.fblink:hover {
+  text-decoration:underline;
+}
+
 .imagenFondo {
   background-image:url('/images/fondo.png');
   width: 372px;
