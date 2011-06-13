@@ -4,7 +4,6 @@
  */
 
 var express = require('express');
-var mongoose = require('mongoose');
 var jsonreq = require('jsonreq');
 var Facebook = require('./facebook');
 
@@ -30,15 +29,12 @@ app.configure(function(){
 
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
-  app.set('db-uri', 'mongodb://localhost/btcfb-development');
 });
 
 app.configure('production', function(){
   app.use(express.errorHandler()); 
-  app.set('db-uri', 'mongodb://btcfb:t3st1ng@localhost/btcfb-production');
 });
 
-app.db = mongoose.connect(app.set('db-uri'));
 
 var checkUser = function(req, res, next){
   if (req.session.fbInfo){
