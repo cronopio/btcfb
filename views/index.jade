@@ -1,10 +1,73 @@
 .imagenFondo
+  - var fbLike = "<fb:like href='http://www.facebook.com/apps/application.php?id=124829930933291' send='false' width='230' show_faces='false' font='' style='position:absolute;top:110px;left:380px;'></fb:like>"
+  | !{fbLike}
   p(class='fbbox', style='position:absolute;top:155px;left:140px;') 
     img(src='/images/iconBtc.png', width='16px', height:'16px', style='float:left;')
-    span(style='margin-left:4px;') El precio hoy: USD 
-      b $#{dolares}
-    span(style='margin-left:4px;') EUR 
-      b €#{euros}
-    span(style='margin-left:4px;') GBP  
-      b £#{libras}
-  p(class='fbbox', style='position:absolute;top:185px;left:140px;', id='userLine')
+    span(style='margin-left:5px;') Today's price is:
+      b #{dolares.tendencia}   
+      b $#{dolares.valor}USD
+    span(style='margin-left:5px;') | 
+      b #{euros.tendencia}  
+      b  €#{euros.valor}EUR 
+    span(style='margin-left:5px;') | 
+      b #{libras.tendencia}  
+      b £#{libras.valor}GBP
+    
+    span(style='margin-left:10px;')
+      a(href='javascript:void(0)', class='fblink', id='btn_share_this') Share This 
+  p(class='fbbox', style='position:absolute;top:5px;left:250px;', id='userLine')
+#contenido
+  .menu
+    a(href='javascript:void(0)', id='btn_calc') Calculate
+  div(id='calculadora', class='fbbox', style='opacity:0;')
+    input(id='calc_btc', size='4')
+    label(style='margin-left:3px') BTC equal to 
+      input(id='calc_dest', size='8', disabled)
+      select(id='calc_list')
+        option(value='#{dolares.valor}') USD
+        option(value='#{euros.valor}') EUR
+        option(value='#{libras.valor}') GBP
+        
+script
+  (function(){
+    var cant = document.getElementById('calc_btc');
+    var lista = document.getElementById('calc_list');
+    var calcular = function(){
+      var res = cant.value * lista.value;
+      document.getElementById('calc_dest').value = res;
+    };
+    cant.onchange = calcular;
+    lista.onchange = calcular;
+    
+    document.getElementById('btn_calc').onclick = function(){
+      var calculadora = document.getElementById('calculadora');
+      var opacity = calculadora.style.opacity;
+      if (opacity == 1) {
+        $fx(calculadora).fxAdd({type:'opacity',from:100,to:0,step:-10,delay:30}).fxRun(null,0);
+      }
+      if (opacity == 0) {
+        $fx(calculadora).fxAdd({type:'opacity',from:0,to:100,step:10,delay:30}).fxRun(null,0);
+      }
+    };
+    
+    // Boton share this
+    var btn_share = document.getElementById('btn_share_this');
+    btn_share.onclick = function(){
+      FB.ui({
+        method: 'feed',
+        name: 'Bitcoin Price of Day',
+        link: 'http://apps.facebook.com/bitcoin_price/',
+        picture: 'http://s1.bitelia.com/files/2011/06/Bitcoin-100x100.png',
+        caption: 'Weighted prices in major markets',
+        description: 'Right now the Bitcoin price are USD #{dolares.valor}  -  € #{euros.valor}  -  £ #{libras.valor}',
+        message: "I Just found out the today's price of Bitcoin. Thanks to Bitcoin Price of Day"
+     },
+     function(response) {
+       if (response && response.post_id) {
+         btn_share.innerHTML = 'Shared!';
+       } else {
+         btn_share.innerHTML = 'Try Again :('
+       }
+     });
+    };
+  })();

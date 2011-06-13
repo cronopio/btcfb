@@ -4,11 +4,17 @@
  */
 
 var express = require('express');
-var mongoose = require('mongoose');
 var jsonreq = require('jsonreq');
-var crypto = require('crypto');
+var Facebook = require('./facebook');
+var mongo = require('mongodb');
+var server = new mongo.Server("127.0.0.1", 27017, {});
 
 var app = module.exports = express.createServer();
+
+var fb = new Facebook({appId:'124829930933291', 
+  key:'c2f33b41ee0f6d7dc3b65ba70b92ef6e', 
+  secret:'9e39d0ddc888b9e08c418debf14cf3b4'
+});
 
 // Configuration
 
@@ -16,52 +22,81 @@ app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
+  app.use(express.cookieParser());
+  app.use(express.methodOverride());  
+  app.use(express.session({secret:'bitcoinpriceonfacebook'}));
   app.use(express.static(__dirname + '/public'));
+  app.use(app.router);
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
-  app.set('db-uri', 'mongodb://localhost/btcfb-development');
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  app.set('db-name', 'btcfb-devel');
 });
 
 app.configure('production', function(){
   app.use(express.errorHandler()); 
-  app.set('db-uri', 'mongodb://btcfb:t3st1ng@localhost/btcfb-production');
+  app.set('db-name', 'btcfb-production');
 });
 
-app.db = mongoose.connect(app.set('db-uri'));
+var db = new mongo.Db(app.set('db-name'), server, {});
 
-var base64_decode = function(cifrado){
-  var limpio = cifrado.replace(/_/, '/').replace(/-/, '+');
-  return new Buffer(limpio, 'base64').toString();
-};
-
-var checkFirma = function(sinverificar, msg){
-    var supuesta = sinverificar+'=';
-    var firma = crypto.createHmac('sha256', '9e39d0ddc888b9e08c418debf14cf3b4').update(msg).digest('base64');
-    if (firma == supuesta){
-      return true;
-    } else {
-      console.log('Supuesta '+supuesta);
-      console.log('Firma '+firma);
-      return false;
-    }
-
-};
+var checkUser = function(req, res, next){
+  if (req.session.fbInfo){
+    req.session.recargas++;
+  } else {
+    console.log('Nuevo Visitante');
+    req.session.recargas = 1;
+  }
+  next();
+    
+}
 
 // Routes
 
-app.get('/', function(req, res){
+app.get('/', checkUser, function(req, res){
+  var locals = {};
+  // Traemos los valores de bitcoincharts.com
   jsonreq.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
-    res.render('index', {
-      title:'Precio del Bitcoin en Facebook',
-      locals: {
-        dolares: data.USD['24h']
-      , euros: data.EUR['24h']
-      , libras: data.GBP['24h'] 
-      }
+    // Inicializamos los locales a pasar a la vista
+    locals.dolares = {valor: data.USD['24h']};
+    locals.euros = {valor: data.EUR['24h']};
+    locals.libras = {valor: data.GBP['24h']};
+    
+    db.open(function(err,client){
+      if (err) throw err;
+      // Iniciamos la guardada de la informacion.
+      db.collection('precios', function(err, precios){
+        var timestamp = new Date();
+        precios.insert({time:timestamp, precios:data}, {safe:true}, 
+          function(err,objs){if (err) console.warn(err.message)});
+      });
+      
+      // Revisamos la tendencia con el nuevo precio
+      db.collection('precios', function (err, precios) {
+        var ultimos = precios.find({}, {sort:{time:-1}});
+        var nuevo = {};
+        ultimos.nextObject(function(err,doc){
+          nuevo = doc;
+        }); 
+        ultimos.nextObject(function(err,doc){
+          var checkTendencia = function (nuevo, viejo) {
+            var ret;
+            if (nuevo === viejo) ret = '=';
+            if (nuevo > viejo) ret = '↑';
+            if (nuevo < viejo) ret = '↓';
+            return ret;
+          }
+          locals.dolares.tendencia = checkTendencia(nuevo.precios.USD['24h'], doc.precios.USD['24h']);
+          locals.euros.tendencia = checkTendencia(nuevo.precios.EUR['24h'], doc.precios.EUR['24h']);
+          locals.libras.tendencia = checkTendencia(nuevo.precios.GBP['24h'], doc.precios.GBP['24h']);
+          res.render('index', {
+            title:'Bitcoin Price on Facebook',
+            locals: locals
+          });
+        });
+      });
+      db.close();
     });
   });
 });
@@ -69,23 +104,14 @@ app.get('/', function(req, res){
 app.post('/', function(req, res){
   if (req.body.signed_request){
     // Es una peticion desde facebook
-    var peticion = req.body.signed_request.split('.');
-    var firma = peticion[0].replace(/_/g, '/').replace(/-/g, '+');
-    var fbObj = JSON.parse(base64_decode(peticion[1]));
-    if (fbObj.algorithm != 'HMAC-SHA256'){
-      console.error('Recibido un mensaje en diferente cifrado');
-      throw new Error('Error de comunicacion con Facebook');
-    }
-    if (checkFirma(firma,peticion[1])){
-      // Podemos confiar en el mensaje y tratar sus datos
-      console.log(fbObj);
-      // Cuando el usuario autoriza la app pasa por aca
-      // y existe fbObj.user_id Este ID hay que guardarlo en nuestra DB
-      // adicionalmente viene un token oauth2 en fbObj.oauth_token
+    var mensaje = fb.request(req.body.signed_request);
+    console.log(mensaje);
+    if (mensaje.user_id){
+      req.session.fbInfo = mensaje;
+      console.log('El usuario '+mensaje.user_id+' ha autorizado la app');
       res.redirect('/');
     } else {
-      console.error('La firma del mensaje no es valida');
-      throw new Error('Error al validar el mensaje con Facebook');
+      fb.auth_dialog(res,'http://apps.facebook.com/bitcoin_price/');
     }
   }
 });

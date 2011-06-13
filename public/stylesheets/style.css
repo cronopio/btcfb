@@ -3,10 +3,6 @@ body {
   background-image:url('/images/background.jpg');
 }
 
-a {
-  color: #00B7FF;
-}
-
 .fbbox {
   background-color: #EDEFF4;
   padding: 5px;
@@ -14,8 +10,29 @@ a {
   color: #666;
 }
 
+a.fblink {
+  color:#3B5998;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+a.fblink:hover {
+  text-decoration:underline;
+}
+
 .imagenFondo {
   background-image:url('/images/fondo.png');
   width: 372px;
   height: 250px;
+}
+
+#contenido {
+  position: absolute;
+  top: 200px;
+  left: 150px;
+}
+
+#contenido .menu a {
+  color: #454545;
+  font-size: large;
 }
