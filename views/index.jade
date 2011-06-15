@@ -48,16 +48,17 @@ script
     cant.onchange = calcular;
     lista.onchange = calcular;
 
-    document.getElementById('disc-title').onclick = function() {
+    document.getElementById('disc-title').onclick = function(){
       var disclaimer = document.getElementById('disclaimer');
       var disclaimerBox = document.getElementById('disclaimer-box');
-      var fontSize = disclaimer.style["font-size"];
+      var fontSize = disclaimer.style.fontSize;
+
       if (fontSize == "100%") {
-        $fx(disclaimer).fxAdd({type:'font-size', to:0, step:-10,delay:20, unit:'%'}).fxRun(null,0);
+        $fx(disclaimer).fxAdd({type:'fontSize', to:0, step:-10,delay:20, unit:'%'}).fxRun(null,0);
         $fx(disclaimerBox).fxAdd({type:'width', to:75, step:-20, delay:30}).fxRun(null,0);
       }
       if (fontSize == "0%") {
-        $fx(disclaimer).fxAdd({type:'font-size', to:100, step:5, delay:40, unit:'%'}).fxRun(null,0);
+        $fx(disclaimer).fxAdd({type:'fontSize', to:100, step:5, delay:40, unit:'%'}).fxRun(null,0);
         $fx(disclaimerBox).fxAdd({type:'width', to:470, step:20, delay:10}).fxRun(null,0);
       }
     };

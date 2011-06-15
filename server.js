@@ -58,6 +58,8 @@ app.get('/', checkUser, function(req, res){
   var locals = {};
   // Traemos los valores de bitcoincharts.com
   jsonreq.get('http://bitcoincharts.com/t/weighted_prices.json', function(err, data) {
+    if (err) throw Error(err);
+    if (!data) throw Error('No hay respuesta de btccharts')
     // Inicializamos los locales a pasar a la vista
     locals.dolares = {valor: data.USD['24h']};
     locals.euros = {valor: data.EUR['24h']};
