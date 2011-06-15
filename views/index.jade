@@ -1,14 +1,14 @@
 .imagenFondo
   - var fbLike = "<fb:like href='http://www.facebook.com/apps/application.php?id=124829930933291' send='false' width='230' show_faces='false' font='' style='position:absolute;top:110px;left:380px;'></fb:like>"
   | !{fbLike}
-  p(class='fbbox', style='position:absolute;top:155px;left:140px;') 
+  p(class='fbbox', style='position:absolute;top:155px;left:110px;') 
     img(src='/images/iconBtc.png', width='16px', height:'16px', style='float:left;')
     span(style='margin-left:5px;') Today's price is:
       b #{dolares.tendencia}   
       b $#{dolares.valor}USD
     span(style='margin-left:5px;') | 
       b #{euros.tendencia}  
-      b  €#{euros.valor}EUR 
+      b €#{euros.valor}EUR 
     span(style='margin-left:5px;') | 
       b #{libras.tendencia}  
       b £#{libras.valor}GBP
@@ -16,6 +16,7 @@
     span(style='margin-left:10px;')
       a(href='javascript:void(0)', class='fblink', id='btn_share_this') Share This 
   p(class='fbbox', style='position:absolute;top:5px;left:250px;', id='userLine')
+
 #contenido
   .menu
     a(href='javascript:void(0)', id='btn_calc') Calculate
@@ -27,6 +28,14 @@
         option(value='#{dolares.valor}') USD
         option(value='#{euros.valor}') EUR
         option(value='#{libras.valor}') GBP
+
+#disclaimer-box(class='fbbox')
+  h3(id='disc-title') Disclaimer
+  p(id='disclaimer', style='font-size: 0%;')
+    | This application cannot be used as a tool for trading BTC.
+    | The prices shown above are the average of the BTC price in
+    | different markets. It is possible that if you are going to
+    | buy or sell BTC you might encounter different prices.
         
 script
   (function(){
@@ -38,6 +47,20 @@ script
     };
     cant.onchange = calcular;
     lista.onchange = calcular;
+
+    document.getElementById('disc-title').onclick = function() {
+      var disclaimer = document.getElementById('disclaimer');
+      var disclaimerBox = document.getElementById('disclaimer-box');
+      var fontSize = disclaimer.style["font-size"];
+      if (fontSize == "100%") {
+        $fx(disclaimer).fxAdd({type:'font-size', to:0, step:-10,delay:20, unit:'%'}).fxRun(null,0);
+        $fx(disclaimerBox).fxAdd({type:'width', to:75, step:-20, delay:30}).fxRun(null,0);
+      }
+      if (fontSize == "0%") {
+        $fx(disclaimer).fxAdd({type:'font-size', to:100, step:5, delay:40, unit:'%'}).fxRun(null,0);
+        $fx(disclaimerBox).fxAdd({type:'width', to:470, step:20, delay:10}).fxRun(null,0);
+      }
+    };
     
     document.getElementById('btn_calc').onclick = function(){
       var calculadora = document.getElementById('calculadora');
@@ -59,8 +82,8 @@ script
         link: 'http://apps.facebook.com/bitcoin_price/',
         picture: 'http://s1.bitelia.com/files/2011/06/Bitcoin-100x100.png',
         caption: 'Weighted prices in major markets',
-        description: 'Right now the Bitcoin price are USD #{dolares.valor}  -  € #{euros.valor}  -  £ #{libras.valor}',
-        message: "I Just found out the today's price of Bitcoin. Thanks to Bitcoin Price of Day"
+        description: 'Right now the BTC prices are $ #{dolares.valor}  -  € #{euros.valor}  -  £ #{libras.valor}',
+        message: "I just found out about the current BTC prices thanks to Bitcoin price of the Day"
      },
      function(response) {
        if (response && response.post_id) {

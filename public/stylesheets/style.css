@@ -32,6 +32,14 @@ a.fblink:hover {
   left: 150px;
 }
 
+#disclaimer-box {
+  position: relative;
+  margin-top: 15px;
+  font-size: 70%;
+  width: 75px;
+  text-align: justify;
+}
+
 #contenido .menu a {
   color: #454545;
   font-size: large;
