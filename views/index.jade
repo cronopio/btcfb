@@ -28,6 +28,8 @@
         option(value='#{dolares.valor}') USD
         option(value='#{euros.valor}') EUR
         option(value='#{libras.valor}') GBP
+    span(style='margin-left:10px;')
+      a(href='javascript:void(0)', class='fblink', id='btn_share_calc') Share This
 
 #disclaimer-box(class='fbbox')
   h3(id='disc-title') Disclaimer
@@ -94,4 +96,16 @@ script
        }
      });
     };
+    
+    var share_calc = document.getElementById('btn_share_calc');
+    share_calc.onclick = function () {
+      FB.ui({
+        method:'feed',
+        name:'Bitcoin Price of Day',
+        link:'http://apps.facebook.com/bitcoin_price/',
+        picture: 'http://s1.bitelia.com/files/2011/06/Bitcoin-100x100.png',
+        caption: 'Weighted prices in major markets',
+        description:''
+      });
+    }
   })();
